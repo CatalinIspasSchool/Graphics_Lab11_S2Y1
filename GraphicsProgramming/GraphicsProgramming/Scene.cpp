@@ -17,7 +17,23 @@ Scene::Scene(Input *in)
 
 void Scene::handleInput(float dt)
 {
-	// Handle user input
+	// Camera movement
+	if (input->isKeyDown('w')) myCamera.moveForward(dt * 10);
+	else if (input->isKeyDown('s'))	myCamera.moveForward(-dt * 10);
+	if (input->isKeyDown('e')) myCamera.moveUp(dt * 10);
+	else if (GetAsyncKeyState('q')) myCamera.moveUp(-dt * 10);									//This is needed cuz ctrl is a modifier key, thus it doesn't normally register alone normally. Shift is VK_SHIFT
+	if (input->isKeyDown('d')) myCamera.moveRight(dt * 10);
+	else if (input->isKeyDown('a')) myCamera.moveRight(-dt * 10);
+
+	int mousePos[2] = { input->getMouseX(), input->getMouseY() };
+	// Camera rotation
+	if (input->isMouseRDown())
+	{
+		myCamera.turnUp(mousePreviousPos[1] - mousePos[1]);
+		myCamera.turnRight(mousePos[0] - mousePreviousPos[0]);
+	}
+	mousePreviousPos[0] = mousePos[0];
+	mousePreviousPos[1] = mousePos[1];
 }
 
 void Scene::update(float dt)
@@ -36,11 +52,12 @@ void Scene::render() {
 	// Reset transformations
 	glLoadIdentity();
 	// Set the camera
-	gluLookAt(0.0f, 0.0f, 6.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-	
+	//gluLookAt(0.0f, 0.0f, 6.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	myCamera.update();
+                      
 	// Render geometry/scene here -------------------------------------
 	
-
+	drawScene();
 
 	// End render geometry --------------------------------------
 
@@ -62,7 +79,60 @@ void Scene::initialiseOpenGL()
 	glDepthFunc(GL_LEQUAL);								// The Type Of Depth Testing To Do
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);	// Really Nice Perspective Calculations
 	glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
+
+	// lighting revision
+	GLfloat Light_Ambient[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+	GLfloat Light_Diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat Light_Position[] = { 0.0, 2.0, 0.0, 1.0 };
+
+	// Activate light
+	glLightfv(GL_LIGHT0, GL_AMBIENT, Light_Ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, Light_Diffuse);
+	glLightfv(GL_LIGHT0, GL_POSITION, Light_Position);
+	glEnable(GL_LIGHT0);
+
+	teapot.Load("models/teapot.obj", "gfx/crate.png");
+
+	impostorTex = SOIL_load_OGL_texture("gfx/imposter.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
 }
+
+void Scene::drawScene()
+{
+	glEnable(GL_LIGHT0);
+	glPushMatrix();
+		glTranslatef(0,-3,0);
+		glColor3f(0.6,0.6,0.6);
+		glBegin(GL_QUADS);
+			glVertex3f(-2, 0, -2);
+			glVertex3f(-2, 0, -2);
+			glVertex3f(-2, 0, -2);
+			glVertex3f(-2, 0, -2);
+		glEnd();
+		glDisable(GL_LIGHT0);
+		glEnable(GL_BLEND);
+		
+		glBegin(GL_QUADS);
+			glVertex3f(-2, 0, -2);
+			glVertex3f(-2, 0, -2);
+			glVertex3f(-2, 0, -2);
+			glVertex3f(-2, 0, -2);
+		glEnd();
+
+		glDisable(GL_BLEND);
+		glEnable(GL_LIGHT0);
+	glPopMatrix();
+	glPushMatrix();
+		glScalef(0.03, 0.03, 0.03);
+		teapot.Render();
+	glPopMatrix();
+}
+
+
+
+
+
+
+
 
 // Handles the resize of the window. If the window changes size the perspective matrix requires re-calculation to match new window size.
 void Scene::resize(int w, int h) 
@@ -94,7 +164,6 @@ void Scene::resize(int w, int h)
 	// Get Back to the Modelview
 	glMatrixMode(GL_MODELVIEW);
 }
-
 // Calculates FPS
 void Scene::calculateFPS()
 {
@@ -107,7 +176,6 @@ void Scene::calculateFPS()
 		frame = 0;
 	}
 }
-
 // Compiles standard output text including FPS and current mouse position.
 void Scene::renderTextOutput()
 {
@@ -116,7 +184,6 @@ void Scene::renderTextOutput()
 	displayText(-1.f, 0.96f, 1.f, 0.f, 0.f, mouseText);
 	displayText(-1.f, 0.90f, 1.f, 0.f, 0.f, fps);
 }
-
 // Renders text to screen. Must be called last in render function (before swap buffers)
 void Scene::displayText(float x, float y, float r, float g, float b, char* string) {
 	// Get Lenth of string

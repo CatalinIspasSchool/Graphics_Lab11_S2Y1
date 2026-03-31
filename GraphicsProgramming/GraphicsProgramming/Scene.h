@@ -14,8 +14,10 @@
 #include <stdio.h>
 // Further includes should go here:
 #include "SOIL.h"
+#include "MyCamera.h"
 #include <vector>
 #include "Shadow.h"
+#include "Model.h"
 
 
 class Scene{
@@ -42,9 +44,15 @@ protected:
 
 	// draw primitive functions
 	
+	void drawScene();
+
 
 	// For access to user input.
 	Input* input;
+	int mousePreviousPos[2];
+
+	// My camera
+	MyCamera myCamera;
 		
 	// For Window and frustum calculation.
 	int width, height;
@@ -54,6 +62,11 @@ protected:
 	int frame = 0, time, timebase = 0;
 	char fps[40];
 	char mouseText[40];
+
+	
+
+	Model teapot;
+	GLuint impostorTex;
 
 };
 
