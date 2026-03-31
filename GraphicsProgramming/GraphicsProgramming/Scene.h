@@ -67,6 +67,7 @@ protected:
 
 	Model teapot;
 	GLuint impostorTex;
+	GLuint grassTex;
 
 };
 

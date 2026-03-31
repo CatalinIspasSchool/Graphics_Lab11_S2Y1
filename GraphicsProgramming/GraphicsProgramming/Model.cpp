@@ -15,11 +15,12 @@ void Model::Load(char* modelFileName, char* textureDef)
 	LoadTexture(textureDef);
 }
 
-//I have not actually done this myself yet, it got auto suggested. I commented it out cuz I am not dealing with it just yet.
 void Model::Render()
 {
 
 	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glPushMatrix();
 	glScalef(10, 10, 10);
 	glBegin(GL_TRIANGLES);

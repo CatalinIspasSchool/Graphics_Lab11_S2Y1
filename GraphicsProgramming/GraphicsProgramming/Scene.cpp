@@ -21,7 +21,7 @@ void Scene::handleInput(float dt)
 	if (input->isKeyDown('w')) myCamera.moveForward(dt * 10);
 	else if (input->isKeyDown('s'))	myCamera.moveForward(-dt * 10);
 	if (input->isKeyDown('e')) myCamera.moveUp(dt * 10);
-	else if (GetAsyncKeyState('q')) myCamera.moveUp(-dt * 10);									//This is needed cuz ctrl is a modifier key, thus it doesn't normally register alone normally. Shift is VK_SHIFT
+	else if (input->isKeyDown('q')) myCamera.moveUp(-dt * 10);									//This is needed cuz ctrl is a modifier key, thus it doesn't normally register alone normally. Shift is VK_SHIFT
 	if (input->isKeyDown('d')) myCamera.moveRight(dt * 10);
 	else if (input->isKeyDown('a')) myCamera.moveRight(-dt * 10);
 
@@ -80,6 +80,10 @@ void Scene::initialiseOpenGL()
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);	// Really Nice Perspective Calculations
 	glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
 
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+
 	// lighting revision
 	GLfloat Light_Ambient[] = { 0.3f, 0.3f, 0.3f, 1.0f };
 	GLfloat Light_Diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -93,6 +97,7 @@ void Scene::initialiseOpenGL()
 
 	teapot.Load("models/teapot.obj", "gfx/crate.png");
 
+	grassTex = SOIL_load_OGL_texture("gfx/grass.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
 	impostorTex = SOIL_load_OGL_texture("gfx/imposter.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
 }
 
@@ -101,21 +106,33 @@ void Scene::drawScene()
 	glEnable(GL_LIGHT0);
 	glPushMatrix();
 		glTranslatef(0,-3,0);
-		glColor3f(0.6,0.6,0.6);
+		//glColor3f(0.6,0.6,0.6);
+		glBindTexture(GL_TEXTURE_2D, grassTex);
 		glBegin(GL_QUADS);
-			glVertex3f(-2, 0, -2);
-			glVertex3f(-2, 0, -2);
-			glVertex3f(-2, 0, -2);
-			glVertex3f(-2, 0, -2);
+			glTexCoord2f(0, 0);
+				glVertex3f(-4, 0, 4);
+			glTexCoord2f(1, 0);
+				glVertex3f(4, 0, 4);
+			glTexCoord2f(1, 1);
+				glVertex3f(4, 0, -4);
+			glTexCoord2f(0, 1);
+				glVertex3f(-4, 0, -4);
 		glEnd();
+		//glColor3f(1, 1, 1);
 		glDisable(GL_LIGHT0);
 		glEnable(GL_BLEND);
-		
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glTranslatef(0, -0.1, 0);
+		glBindTexture(GL_TEXTURE_2D, impostorTex);
 		glBegin(GL_QUADS);
-			glVertex3f(-2, 0, -2);
-			glVertex3f(-2, 0, -2);
-			glVertex3f(-2, 0, -2);
-			glVertex3f(-2, 0, -2);
+			glTexCoord2f(0, 0);
+				glVertex3f(-4, 0, 4);
+			glTexCoord2f(1, 0);
+				glVertex3f(4, 0, 4);
+			glTexCoord2f(1, 1);
+				glVertex3f(4, 0, -4);
+			glTexCoord2f(0, 1);
+				glVertex3f(-4, 0, -4);
 		glEnd();
 
 		glDisable(GL_BLEND);
